@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const mysql = require('mysql')
-const bodyParser = require('body-parser')
+//const bodyParser = require('body-parser')
 const fs = require('fs');
 
 //middleware
@@ -9,8 +9,71 @@ app.use(express.urlencoded({extended:false}))
 app.use(express.json())//used to accept data in Json format
 //app.use(bodyParser.json());
 
+const schema = fs.readFileSync('dataschema.json','utf-8')
+const schemaObj = JSON.parse(schema);
+const dataObj = {};
+Object.keys(schemaObj).forEach(object => {
+    dataObj[object] = [];
+});
+
+app.get('/clients',(req,res) => {
+    res.status(200).json({success: true, data: dataObj["clients"]});
+})
+
+app.post('/clients',(req,res) => {
+    const clients = req.body
+    const clientId = req.body.clientId
+    
+    clients.clientId = clientId
+    dataObj["clients"].push(clients)
+    const data = JSON.stringify(dataObj);
+    fs.writeFileSync('./data.json', data + "\n",{flag:'a'});
+    res.status(201).json({success: true, data: dataObj["clients"]});
+})
+
+app.get('/rooms',(req,res) => {
+    res.status(200).json({success: true, data: dataObj["rooms"]});
+})
+
+app.post('/rooms',(req,res) =>{
+    const rooms = req.body
+    const roomId = req.body.roomId
+    rooms.roomId = roomId
+    dataObj["rooms"].push(rooms);
+    const data = JSON.stringify(dataObj);
+    fs.writeFileSync('./data.json', data + "\n",{flag:'a'});
+    res.status(201).json({success: true, data: dataObj["rooms"]});
+})
+
+app.get('/bookings',(req,res) => {
+
+    res.status(200).json({success: true, data: dataObj["bookings"]});
+})
+
+app.post('/bookings',(req,res) => {
+
+    const booking = req.body
+    const clientId = req.body.clientId
+    const roomId = req.body.roomId
+
+    const date = new Date();   
+    booking.bookingID = req.body.clientId + req.body.roomId
+    booking.CheckIN = date
+       
+    dataObj["bookings"].push(booking);
+    const data = JSON.stringify(dataObj);
+    fs.writeFileSync('./data.json', data + "\n",{flag:'a'});
+
+    console.log(booking)
+    res.status(201).json({success: true, data: dataObj["bookings"]});
+})
+
+app.listen(5000, () => {
+    console.log('Server is listening at port 5000...')
+})
+
 //create database connection
-const conn = mysql.createConnection({
+/*const conn = mysql.createConnection({
     host: 'localhost',
     user:'root',
     password:null,
@@ -26,78 +89,10 @@ conn.connect((err) =>{
     {
         console.log("Database connection successful")
     }
-})
-
-const schema = fs.readFileSync('datastructure.json','utf-8')
-const schemaObj = JSON.parse(schema);
-const dataObj = {};
-Object.keys(schemaObj).forEach(table => {
-    dataObj[table] = [];
-});
-
-app.get('/client',(req,res) => {
-    res.status(200).json({success: true, data: dataObj["clients"]});
-})
-
-app.post('client',(req,res) => {
-    const {clientId} = req.body;
-    if(!clientId){
-        return res.status(400).json({success: false, message: 'Please provide an ID'});
-    }
-    dataObj["clients"].push(req.body);
-    const data = JSON.stringify(dataObj);
-    fs.writeFileSync('./data.json', data + "\n",{flag:'a'});
-    res.status(201).json({success: true, data: dataObj["clients"]});
-})
-
-app.get('/room',(req,res) => {
-    res.status(200).json({success: true, data: dataObj["rooms"]});
-})
-
-app.post('/room',(req,res) =>{
-    function create (){
-        const {roomId} = req.body;
-    if(!roomId){
-        return res.status(400).json({success: false, message: 'Please provide an ID'});
-    }
-    dataObj["rooms"].push(req.body);
-    const data = JSON.stringify(dataObj);
-    fs.writeFileSync('./data.json', data + "\n",{flag:'a'});
-    res.status(201).json({success: true, data: dataObj["rooms"]});
-    }
-})
-
-app.get('/booking',(req,res) => {
-
-    res.status(200).json({success: true, data: dataObj["bookings"]});
-})
-
-app.post('/booking',(req,res) => {
-
-     //const {clientId, roomId} = req.body;
-     const booking = req.body
-     const clientId = req.body.clientId
-     const roomId = req.body.roomId
-     if(!clientId || !roomId){
-         return res.status(400).json({success: false, message: 'Please provide an ID'});
-     }
-     
-      booking.bookingID = req.body.clientId + req.body.roomId
-     
-     //dataObj["bookings"].push(req.body);
-     dataObj["clients"].push(clientId);
-     dataObj["rooms"].push(roomId);
-     dataObj["bookings"].push(booking);
-     const data = JSON.stringify(dataObj);
-     fs.writeFileSync('./data.json', data + "\n",{flag:'a'});
- 
-     console.log(booking)
- 
-     res.status(201).json({success: true, data: dataObj["bookings"]});
-})
-/*app.post('')
-post route for clients
-app.post('/tulia/clients',(req,res) => {  
+})*/
+//app.post('')
+//apost route for clients
+/*app.post('/tulia/clients',(req,res) => {  
     const name = req.body.name
     const gender = req.body.gender
     const roomID = req.body.roomID
@@ -127,10 +122,9 @@ app.post('/tulia/clients',(req,res) => {
             }
         })
      }
+     step1()
     res.status(200).send("All is well")
  })*/
 
-app.listen(5000, () => {
-    console.log('Server is listening at port 5000...')
-})
+
 
