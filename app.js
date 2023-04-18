@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const mysql = require('mysql')
-//const bodyParser = require('body-parser')
+//[const bodyParser = require('body-parser')
 const fs = require('fs');
 
 //middleware
@@ -10,6 +10,7 @@ app.use(express.json())//used to accept data in Json format
 //app.use(bodyParser.json());
 
 const schema = fs.readFileSync('dataschema.json','utf-8')
+console.log(schema)
 const schemaObj = JSON.parse(schema);
 const dataObj = {};
 Object.keys(schemaObj).forEach(object => {
